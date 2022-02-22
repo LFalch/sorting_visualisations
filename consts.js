@@ -22,4 +22,4 @@ const randomSetupLength = 150;
 // ms of extra wait between every swap
 let swapDur = 10;
 // ms of extra wait between every comparison
-let compDur = 0;
+let compDur = 1;
