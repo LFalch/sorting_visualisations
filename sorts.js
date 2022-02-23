@@ -36,6 +36,7 @@ async function selectionSort(values, start, end) {
 }
 
 async function insertionSort(values, start, end) {
+    if (end >= start) return;
     values[start].color = 'green';
     for (let i = start + 1; i < end; i++) {
         values[i].color = 'blue';
@@ -50,6 +51,7 @@ async function insertionSort(values, start, end) {
 }
 
 async function binaryInsertionSort(values, start, end) {
+    if (end >= start) return;
     values[start].color = 'green';
     for (let i = start + 1; i < end; i++) {
         values[i].color = 'yellow';
