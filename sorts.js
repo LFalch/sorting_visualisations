@@ -54,9 +54,12 @@ async function binaryInsertionSort(values, start, end) {
     for (let i = start + 1; i < end; i++) {
         values[i].color = 'yellow';
         const index = await binarySearch(values, start, i, values[i]);
+        const target = values[index];
+        target.color = 'teal';
         for (let j = i; j > index; j--) {
             await swap(values, j, j-1);
         }
+        target.color = 'green';
         values[index].color = 'green';
     }
 }
@@ -289,4 +292,194 @@ async function randomMergeSort(values, start, end) {
 
         await merge(values, start, split, end);
     }
+}
+
+async function reverseValues(values, start, end) {
+    while (start < end) {
+        await swap(values, start, end-1);
+        start++;
+        end--;
+    }
+}
+
+async function goodSort(values, start, end) {
+    while (end - start > 1) {
+        const m = floor((start + end) / 2);
+        await goodSort(values, start, m);
+        await goodSort(values, m, end);
+        values[start].color = 'blue';
+        values[m-1].color = 'blue';
+        values[m].color = 'blue';
+        values[end-1].color = 'blue';
+        await reverseValues(values, start, m);
+        values[start].color = 'white';
+        values[m-1].color = 'white';
+        values[m].color = 'white';
+        values[end-1].color = 'white';
+
+        // Find greatest value
+        if (await values[start].gt(values[end-1])) {
+            await swap(values, start, end-1);
+        }
+
+        if (await lt(values, m-1, m)) {
+            await swap(values, m-1, start);
+        } else {
+            await swap(values, m, start);
+        }
+
+        values[start].color = 'green';
+        start++;
+        end--;
+        values[end].color = 'green';
+    }
+}
+
+async function betterSort(values, start, end) {
+    if (end - start <= 1) return;
+
+    const m = floor((start + end) / 2);
+
+    await betterSort(values, start, m);
+    for (let i = start; i < m; i++) {
+        values[i].color = 'blue';
+    }
+    await reverseValues(values, start, m);
+
+    await betterSort(values, m, end);
+    for (let i = m; i < end; i++) {
+        values[i].color = 'teal';
+    }
+
+    while (end - start > 1) {
+        // Find greatest value
+        if (await values[start].gt(values[end - 1])) {
+            await swap(values, start, end - 1);
+        }
+
+        const greenSet = () => {
+            values[start].color = 'green';
+            start++;
+            end--;
+            values[end].color = 'green';
+        }
+
+        if (await lt(values, m - 1, m)) {
+            await swap(values, m - 1, start);
+
+            greenSet();
+
+            await betterSort(values, start+1, m);
+            for (let i = start+1; i < m; i++) {
+                values[i].color = 'blue';
+            }
+            await reverseValues(values, start+1, m);
+        } else {
+            await swap(values, m, start);
+
+            greenSet();
+
+            await betterSort(values, m, end-1);
+            for (let i = m; i < end-1; i++) {
+                values[i].color = 'teal';
+            }
+        }
+    }
+}
+
+async function bestSort(values, start, end) {
+    if (end - start <= 1) return;
+
+    const m = floor((start + end) / 2);
+
+    await bestSort(values, start, m);
+    for (let i = start; i < m; i++) {
+        values[i].color = 'blue';
+    }
+
+    await bestSort(values, m, end);
+    for (let i = m; i < end; i++) {
+        values[i].color = 'teal';
+    }
+
+    while (end - start > 1) {
+        let resortLeft = false, resortRight = false;
+        // Find greatest value
+        if (await values[m-1].gt(values[end - 1])) {
+            values[m-1].color = 'yellow';
+            values[end-1].color = 'yellow';
+            await swap(values, m-1, end - 1);
+            resortLeft = true;
+        }
+        // Find smallest value
+        if (await values[start].gt(values[m])) {
+            values[start].color = 'yellow';
+            values[m].color = 'yellow';
+            await swap(values, start, m);
+            resortRight = true;
+        }
+
+        values[start].color = 'green';
+        start++;
+        end--;
+        values[end].color = 'green';
+
+        if (resortLeft && m-2 >= start && values[m-2].gt(values[m-1])) {
+            await bestSort(values, start, m);
+            for (let i = start; i < m; i++) {
+                values[i].color = 'blue';
+            }
+        }
+        if (resortRight && m+1 < end && values[m].gt(values[m+1])) {
+            await bestSort(values, m, end);
+            for (let i = m; i < end; i++) {
+                values[i].color = 'teal';
+            }
+        }
+    }
+}
+
+async function randomSort(values, start, end) {
+    const lim = 2 * (end - start);
+    
+    for (let n = 0; n < lim; n++) {
+        const i = start+floor(random(end-start-1));
+        const j = i+1+floor(random(end-i-1));
+
+        values[i].color = 'blue';
+        values[j].color = 'blue';
+
+        if (await gt(values, i, j)) {
+            await swap(values, i, j);
+            n = 0;
+        }
+
+        values[i].color = 'white';
+        values[j].color = 'white';
+    }
+
+    // Check if it's sorted and quickly fix any minor mistakes
+    await insertionSort(values, start, end);
+}
+
+async function randomSortLazy(values, start, end) {
+    const lim = 1.5 * (end - start) * (Math.log2((end - start)) + 1);
+
+    for (let n = 0; n < lim; n++) {
+        const i = start + floor(random(end - start - 1));
+        const j = i + 1 + floor(random(end - i - 1));
+
+        values[i].color = 'blue';
+        values[j].color = 'blue';
+
+        if (await gt(values, i, j)) {
+            await swap(values, i, j);
+        }
+
+        values[i].color = 'white';
+        values[j].color = 'white';
+    }
+
+    // Check if it's sorted and quickly fix any minor mistakes
+    await insertionSort(values, start, end);
 }

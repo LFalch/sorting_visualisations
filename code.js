@@ -41,25 +41,26 @@ async function sortListsAsyncly(values) {
     });
 
 
-    await Promise.all(algs.map((alg, i) => doAlg(alg, i).then(() => checkList(data[i]))));
-}
-
-async function checkList(values) {
-    values.forEach((v) => v.color = 'grey');
-    values[0].color = 'green';
-    let i;
-    for (i = 1; i < values.length; i++) {
-        if (await values[i].gt(values[i-1])) {
-            values[i].color = 'green';
-        } else {
-            values[i].color = 'red';
-        }
-    }
+    await Promise.all(algs.map((alg, i) => doAlg(alg, i)));
 }
 
 async function doAlg(alg, dataIndex) {
-    await alg(data[dataIndex], 0, data[dataIndex].length);
+    const vals = data[dataIndex];
+
+    await alg(vals, 0, vals.length);
     console.log(alg.name + ' finished!');
+
+    // check if it's right
+    vals.forEach((v) => v.color = 'grey');
+    vals[0].color = 'green';
+    let i;
+    for (i = 1; i < vals.length; i++) {
+        if (await vals[i].gt(vals[i - 1])) {
+            vals[i].color = 'green';
+        } else {
+            vals[i].color = 'red';
+        }
+    }
 }
 
 function draw() {
