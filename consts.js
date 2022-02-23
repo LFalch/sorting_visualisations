@@ -5,21 +5,21 @@ const algs = [
     mergeSortBinaryHybrid,
     mergeSortHybrid,
     mergeSort,
-    // binaryInsertionSort,
+    binaryInsertionSort,
     insertionSort,
     selectionSort,
-    // bubbleSort,
+    bubbleSort,
+    slowSort,
     randomMergeSort,
-    // slowSort,
 ];
 
 // Size of canvas
-const w = 800, h = 600;
+const w = 1000, h = 800;
 
 // Length of randomly generated array to show
-const randomSetupLength = 150;
+const randomSetupLength = 200;
 
 // ms of extra wait between every swap
-let swapDur = 10;
+let swapDur = 7;
 // ms of extra wait between every comparison
 let compDur = 1;
