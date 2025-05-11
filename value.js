@@ -3,13 +3,21 @@ class Value {
     #oldC = [];
     color = 'white';
 
-    constructor(n) {
+    constructor(n, algIndex) {
+        this.algIndex = algIndex;
         this.#n = n;
     }
 
+    #getFreq() {
+        return minFreq + ((this.#n - rectWidth) / (maxHeight - rectWidth)) * (maxFreq - minFreq);
+    }
+    playTone() {
+        soundManager.playTone(this.algIndex, this.#getFreq());
+    }
     draw(i, y) {
         fill(this.color);
-        rect(rectWidth*i, (y+1)*maxHeight-this.#n, rectWidth, this.#n);
+        stroke(0);
+        rect(rectWidth*i + leftMargin, (y+1)*maxHeight-this.#n, rectWidth, this.#n);
     }
     tempColor(c) {
         this.#oldC.push(this.color);

@@ -18,6 +18,8 @@ const algs = [
     randomSortLazy,
 ];
 
+const soundManager = new SoundManager(algs.length);
+
 // Size of canvas
 const w = 1000, h = 800;
 
@@ -28,3 +30,11 @@ const randomSetupLength = 80;
 let swapDur = 10;
 // ms of extra wait between every comparison
 let compDur = 10;
+
+// Sound frequency range.
+const minFreq = 200, maxFreq = 1000;
+
+// Layout for canvas buttons.
+const leftMargin = 120;
+const buttonWidth = 20;
+const buttonHeight = 20;
