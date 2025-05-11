@@ -9,7 +9,7 @@ class Value {
     }
 
     #getFreq() {
-        return minFreq + ((this.#n - rectWidth) / (maxHeight - rectWidth)) * (maxFreq - minFreq);
+        return map(this.#n, rectWidth, maxHeight, minFreq, maxFreq);
     }
     #playTone() {
         soundManager.playTone(this.algIndex, this.#getFreq());
