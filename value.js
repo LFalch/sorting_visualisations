@@ -11,7 +11,7 @@ class Value {
     #getFreq() {
         return minFreq + ((this.#n - rectWidth) / (maxHeight - rectWidth)) * (maxFreq - minFreq);
     }
-    playTone() {
+    #playTone() {
         soundManager.playTone(this.algIndex, this.#getFreq());
     }
     draw(i, y) {
@@ -31,7 +31,9 @@ class Value {
         this.color = this.#oldC.pop();
     }
     async cmp(other) {
+        this.#playTone();
         await sleep(compDur);
+        other.#playTone();
         if (this.#n > other.#n) {
             return 1;
         } else if (this.#n == other.#n) {
@@ -41,7 +43,9 @@ class Value {
         }
     }
     async gt(other) {
+        this.#playTone();
         await sleep(compDur);
+        other.#playTone();
         return this.#n > other.#n;
     }
     getN() {

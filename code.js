@@ -36,11 +36,9 @@ async function doAlg(alg, dataIndex) {
 
     // check if it's right
     vals.forEach((v) => v.color = 'grey');
-    vals[0].playTone();
     vals[0].color = 'green';
     let i;
     for (i = 1; i < vals.length; i++) {
-        vals[i].playTone();
         if (await vals[i].gt(vals[i - 1])) {
             vals[i].color = 'green';
         } else {
