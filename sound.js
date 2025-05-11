@@ -1,53 +1,79 @@
 class SoundManager {
     constructor(count) {
-        this.enabled = new Array(count).fill(false);
-        this.audioCtxs = new Array(count).fill(null);
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+        this.voices = Array.from({ length: count }, () => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            gain.gain.value = 0;
+
+            osc.type = 'sine';
+            osc.connect(gain).connect(this.ctx.destination);
+            osc.start();
+
+            return {
+                enabled: false,
+                osc,
+                gain
+            };
+        });
     }
-    enable(index) {
-        this.enabled.fill(false);
-        this.enabled[index] = true;
-        if (!this.audioCtxs[index]) {
-            this.audioCtxs[index] = new (window.AudioContext||window.webkitAudioContext)();
-        }
+
+    enable(index)  {
+        this.ctx.resume();
+        this.voices.forEach(voice => voice.enabled = false);
+        this.voices[index].enabled = true;
     }
+
     disable(index) {
-        this.enabled[index] = false;
-        if (this.audioCtxs[index]) {
-            this.audioCtxs[index].close();
-            this.audioCtxs[index] = null;
-        }
+        this.voices[index].enabled = false;
+        this.voices[index].gain.gain.setValueAtTime(0, this.ctx.currentTime);
     }
+
     isEnabled(index) {
-        return this.enabled[index];
+        return this.voices[index].enabled;
     }
+
     playTone(index, freq) {
-        if (!this.isEnabled(index)) {
+        const voice = this.voices[index];
+
+        if (!voice.enabled) {
             return;
         }
 
-        const ctx = this.audioCtxs[index];
-        const osc = ctx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
+        const duration = 0.10; // Duration of the sound in seconds.
+        const attack = 0.02; // Attack time in seconds.
+        const release = 0.02; // Release time in seconds.
+        const glide = 0.003; // Glide time in seconds.
+        const peakGain = 0.3; // Peak gain value (0.0 to 1.0).
 
-        const gainNode = ctx.createGain();
-        osc.connect(gainNode);
-        gainNode.connect(ctx.destination);
+        const t0 = this.ctx.currentTime;
 
-        const now = ctx.currentTime;
-        const duration = 0.1;
-        const fadeTime = 0.01;
-        gainNode.gain.cancelScheduledValues(now);
+        // Glide from the current frequency to the new one.
+        voice.osc.frequency.cancelScheduledValues(t0);
+        voice.osc.frequency.setTargetAtTime(freq, t0, glide);
 
-        const maxGain = 0.3;
+        // Gentle gain envelope.
+        const gain = voice.gain.gain;
 
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(maxGain, now + fadeTime);
-        
-        osc.start(now);
-        gainNode.gain.linearRampToValueAtTime(0, now + duration - fadeTime);
-        osc.stop(now + duration);
-        osc.onended = () => { osc.disconnect(); gainNode.disconnect(); };
+        if (gain.cancelAndHoldAtTime) {
+          // Freeze at the actual current value if supported.
+          gain.cancelAndHoldAtTime(t0);
+        } else {
+          // Otherwise estimate current value and start from there.
+          const current = gain.value; // Last explicit value set.
+          gain.cancelScheduledValues(t0);
+          gain.setValueAtTime(current, t0);
+        }
+
+        // Attack
+        gain.linearRampToValueAtTime(peakGain, t0 + attack);
+
+        // Hold
+        gain.setValueAtTime(peakGain, t0 + attack);
+        gain.setValueAtTime(peakGain, t0 + duration - release);
+
+        // Release
+        gain.setTargetAtTime(0.0001, t0 + duration - release, release);
     }
 }
-
