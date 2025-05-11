@@ -2,11 +2,13 @@ async function bubbleSort(values, start, end) {
     for (let e = end-1; e >= start; e--) {
         for (let i = 0; i < e; i++) {
             values[i].color = 'blue';
+            values[i + 1].playTone();
             if (await values[i].gt(values[i+1])) {
                 await swap(values, i, i+1);
             }
             values[i].color = 'white';
         }
+        values[e].playTone();
         values[e].color = 'green';
     }
 }
@@ -15,13 +17,16 @@ async function selectionSort(values, start, end) {
     for (let i = start; i < end - 1; i++) {
         let jMin = i;
         values[jMin].color = 'blue';
+        values[jMin].playTone();
         
         for (let j = i + 1; j < end; j++) {
             values[j].color = 'teal';
+            values[j].playTone();
             if (await lt(values, j, jMin)) {
                 values[jMin].color = 'white';
                 jMin = j;
                 values[jMin].color = 'blue';
+                values[jMin].playTone();
             } else {
                 values[j].color = 'white';
             }
@@ -40,8 +45,10 @@ async function insertionSort(values, start, end) {
     values[start].color = 'green';
     for (let i = start + 1; i < end; i++) {
         values[i].color = 'blue';
+        values[i].playTone();
         let j;
         for (j = i; j > start; j--) {
+            values[j - 1].playTone();
             if (await values[j].gt(values[j - 1])) 
                 break;
             await swap(values, j, j-1);
@@ -55,10 +62,13 @@ async function binaryInsertionSort(values, start, end) {
     values[start].color = 'green';
     for (let i = start + 1; i < end; i++) {
         values[i].color = 'yellow';
+        values[i].playTone();
         const index = await binarySearch(values, start, i, values[i]);
         const target = values[index];
         target.color = 'teal';
+        target.playTone();
         for (let j = i; j > index; j--) {
+            values[j - 1].playTone();
             await swap(values, j, j-1);
         }
         target.color = 'green';
@@ -70,6 +80,7 @@ async function binarySearch(values, start, end, val) {
     while (start < end) {
         const mid = floor((start + end) / 2);
         values[mid].tempColor('blue');
+        values[mid].playTone();
 
         switch (await values[mid].cmp(val)) {
             case 0: return mid;
@@ -117,6 +128,7 @@ async function merge(values, start, p, end) {
     const startArr = values.slice(start, p);
 
     while (startArr.length > 0 || p < end) {
+        values[start].playTone();
         if (startArr.length <= 0 || (p < end && (await startArr[0].gt(values[p])))) {
             await swap(values, start, p);
             p++;
@@ -193,6 +205,7 @@ async function quickSort(values, start, end) {
     if (len > 1) {
         const p = await partition(values, start, end);
         values[p].tempColor('red');
+        values[p].playTone();
         await quickSort(values, start, p);
         await quickSort(values, p+1, end);
         values[p].resetColor();
@@ -205,6 +218,7 @@ async function quickSortHybrid(values, start, end) {
     if (len > 10) {
         const p = await partition(values, start, end);
         values[p].tempColor('red');
+        values[p].playTone();
         await quickSortHybrid(values, start, p);
         await quickSortHybrid(values, p + 1, end);
         values[p].resetColor();
@@ -216,6 +230,7 @@ async function quickSortHybrid(values, start, end) {
 async function partition(values, start, end) {
     const pivot = values[end-1];
     pivot.tempColor('blue');
+    pivot.playTone();
 
     let i = start;
     let j = end-1;
@@ -223,11 +238,13 @@ async function partition(values, start, end) {
     // slightly bad
     while(j > i) {
         if (await values[i].cmp(pivot) < 1) {
+            values[i].playTone();
             i++;
             continue;
         }
 
         if (await values[j-1].cmp(pivot) > -1) {
+            values[j-1].playTone();
             j--;
             continue;
         }
@@ -236,6 +253,7 @@ async function partition(values, start, end) {
 
         values[i].color = 'yellow';
         values[j].color = 'yellow';
+        values[j].playTone();
         
         await swap(values, i, j);
         i++;
@@ -273,8 +291,10 @@ async function slowSort(values, start, end) {
         for (let i = m; i < end; i++) {
             values[i].color = 'white';
         }
-        if (await lt(values, end-1, m-1))
+        if (await lt(values, end-1, m-1)) {
+            values[m-1].playTone();
             await swap(values, end-1, m-1);
+        }
         values[end-1].color = 'lime';
         await slowSort(values, start, end-1);
     } else {
@@ -298,6 +318,7 @@ async function randomMergeSort(values, start, end) {
 
 async function reverseValues(values, start, end) {
     while (start < end) {
+        values[start].playTone();
         await swap(values, start, end-1);
         start++;
         end--;
@@ -320,10 +341,13 @@ async function goodSort(values, start, end) {
         values[end-1].color = 'white';
 
         // Find greatest value
+        values[start].playTone();
         if (await values[start].gt(values[end-1])) {
+            values[end-1].playTone();
             await swap(values, start, end-1);
         }
 
+        values[m-1].playTone();
         if (await lt(values, m-1, m)) {
             await swap(values, m-1, start);
         } else {
@@ -355,7 +379,9 @@ async function betterSort(values, start, end) {
 
     while (end - start > 1) {
         // Find greatest value
+        values[start].playTone();
         if (await values[start].gt(values[end - 1])) {
+            values[end - 1].playTone();
             await swap(values, start, end - 1);
         }
 
@@ -366,6 +392,7 @@ async function betterSort(values, start, end) {
             values[end].color = 'green';
         }
 
+        values[m - 1].playTone();
         if (await lt(values, m - 1, m)) {
             await swap(values, m - 1, start);
 
@@ -377,6 +404,7 @@ async function betterSort(values, start, end) {
             }
             await reverseValues(values, start+1, m);
         } else {
+            values[m].playTone();
             await swap(values, m, start);
 
             greenSet();
@@ -407,13 +435,16 @@ async function bestSort(values, start, end) {
     while (end - start > 1) {
         let resortLeft = false, resortRight = false;
         // Find greatest value
+        values[start].playTone();
         if (await values[m-1].gt(values[end - 1])) {
             values[m-1].color = 'yellow';
             values[end-1].color = 'yellow';
+            values[m - 1].playTone();
             await swap(values, m-1, end - 1);
             resortLeft = true;
         }
         // Find smallest value
+        values[m].playTone();
         if (await values[start].gt(values[m])) {
             values[start].color = 'yellow';
             values[m].color = 'yellow';
@@ -451,7 +482,9 @@ async function randomSort(values, start, end) {
         values[i].color = 'blue';
         values[j].color = 'blue';
 
+        values[j].playTone();
         if (await gt(values, i, j)) {
+            values[i].playTone();
             await swap(values, i, j);
             n = 0;
         }
@@ -474,7 +507,9 @@ async function randomSortLazy(values, start, end) {
         values[i].color = 'blue';
         values[j].color = 'blue';
 
+        values[j].playTone();
         if (await gt(values, i, j)) {
+            values[i].playTone();
             await swap(values, i, j);
         }
 

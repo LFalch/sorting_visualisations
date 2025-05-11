@@ -32,12 +32,12 @@ function normalise(values) {
 }
 
 async function sortListsAsyncly(values) {
-    rectWidth = width / values.length;
+    rectWidth = (width - leftMargin) / values.length;
 
     data = [];
 
-    algs.forEach(function (_) {
-        data.push(values.map((n) => new Value(n)));
+    algs.forEach(function (_, i) {
+        data.push(values.map((n) => new Value(n, i)));
     });
 
 
@@ -52,9 +52,11 @@ async function doAlg(alg, dataIndex) {
 
     // check if it's right
     vals.forEach((v) => v.color = 'grey');
+    vals[0].playTone();
     vals[0].color = 'green';
     let i;
     for (i = 1; i < vals.length; i++) {
+        vals[i].playTone();
         if (await vals[i].gt(vals[i - 1])) {
             vals[i].color = 'green';
         } else {
@@ -70,6 +72,36 @@ function draw() {
             val.draw(j, i);
         });
     });
+    drawingContext.globalCompositeOperation = 'source-over';
+    // Draw sound toggle buttons and labels.
+    for (let i = 0; i < algs.length; i++) {
+        const x = 10;
+        const y = i * maxHeight + (maxHeight - buttonHeight) / 2;
+        noStroke();
+        fill(soundManager.isEnabled(i) ? 'green' : 'red');
+        rect(x, y, buttonWidth, buttonHeight);
+        stroke(0);
+        strokeWeight(2);
+        fill('white');
+        textSize(12);
+        text(algs[i].name, x + buttonWidth + 5, y + buttonHeight - 5);
+        strokeWeight(1);
+        noStroke();
+    }
+}
+
+function mousePressed() {
+    for (let i = 0; i < algs.length; i++) {
+        const x = 10;
+        const y = i * maxHeight + (maxHeight - buttonHeight) / 2;
+        if (mouseX >= x && mouseX <= x + buttonWidth && mouseY >= y && mouseY <= y + buttonHeight) {
+            if (soundManager.isEnabled(i)) {
+                soundManager.disable(i);
+            } else {
+                soundManager.enable(i);
+            }
+        }
+    }
 }
 
 function sleep(ms) {
@@ -93,7 +125,7 @@ async function insert(values, i, v) {
     if (typeof v == 'object') {
         values[i] = v;
     } else
-        values[i] = new Value(v);
+        values[i] = new Value(v, values[i].algIndex);
 }
 
 async function gt(values, i, j) {
