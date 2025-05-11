@@ -8,27 +8,11 @@ function setup() {
     createCanvas(w, h);
     let values = [];
     for (let i = 0; i < randomSetupLength; i++) {
-        values[i] = random(rectWidth, maxHeight);
+        values[i] = i / randomSetupLength * (maxHeight-rectWidth) + rectWidth;
     }
+    values = shuffle(values);
 
     console.log(sortListsAsyncly(values));
-}
-
-function sorted(length) {
-    const vals = [];
-    for (let i = 0; i < length; i++) {
-        vals[i] = i;
-    }
-    return normalise(vals);
-}
-
-function normalise(values) {
-    const min = values.reduce((a, b) => Math.min(a, b));
-    const max = values.reduce((a, b) => Math.max(a, b));
-
-    return values.map(function (x) {
-        return (x - min) / (max - min) * (maxHeight-rectWidth) + rectWidth;
-    });
 }
 
 async function sortListsAsyncly(values) {
@@ -72,7 +56,6 @@ function draw() {
             val.draw(j, i);
         });
     });
-    drawingContext.globalCompositeOperation = 'source-over';
     // Draw sound toggle buttons and labels.
     for (let i = 0; i < algs.length; i++) {
         const x = 10;
